@@ -1391,7 +1391,8 @@ void fixupConnect(ImplicitLocOpBuilder &builder, Value dst, Value src) {
 /// module.
 void fixupAllModules(InstanceGraph &instanceGraph) {
   for (auto *node : instanceGraph) {
-    auto module = cast<FModuleLike>(*node->getModule());
+    Operation* op = node->getModule();
+    auto module = cast<FModuleLike>(op);
     for (auto *instRec : node->uses()) {
       auto inst = instRec->getInstance<InstanceOp>();
       // Only handle module instantiations for now.
