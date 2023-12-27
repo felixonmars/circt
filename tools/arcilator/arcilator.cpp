@@ -11,6 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "ObjectCompilation.h"
 #include "circt/Conversion/CombToArith.h"
 #include "circt/Conversion/SeqToSV.h"
 #include "circt/Dialect/Arc/ArcDialect.h"
@@ -177,11 +178,12 @@ static cl::opt<Until>
                   runUntilValues, cl::init(UntilEnd), cl::cat(mainCategory));
 
 // Options to control the output format.
-enum OutputFormat { OutputMLIR, OutputLLVM, OutputDisabled };
+enum OutputFormat { OutputMLIR, OutputLLVM, OutputObject, OutputDisabled };
 static cl::opt<OutputFormat> outputFormat(
     cl::desc("Specify output format"),
     cl::values(clEnumValN(OutputMLIR, "emit-mlir", "Emit MLIR dialects"),
                clEnumValN(OutputLLVM, "emit-llvm", "Emit LLVM"),
+               clEnumValN(OutputLLVM, "emit-object", "Emit an Object file"),
                clEnumValN(OutputDisabled, "disable-output",
                           "Do not output anything")),
     cl::init(OutputLLVM), cl::cat(mainCategory));
@@ -315,6 +317,7 @@ static void populatePipeline(PassManager &pm) {
   pm.addPass(createLowerArcToLLVMPass());
   pm.addPass(createCSEPass());
   pm.addPass(arc::createArcCanonicalizerPass());
+  pm.addPass(arc::createSeparateModules());
 }
 
 static LogicalResult processBuffer(
@@ -359,6 +362,20 @@ static LogicalResult processBuffer(
     auto outputTimer = ts.nest("Print LLVM output");
     llvm::LLVMContext llvmContext;
     auto llvmModule = mlir::translateModuleToLLVMIR(module.get(), llvmContext);
+    if (!llvmModule)
+      return failure();
+    llvmModule->print(outputFile.value()->os(), nullptr);
+    return success();
+  }
+
+  if (outputFormat == OutputObject) {
+    auto outputTimer = ts.nest("Emit an object");
+    auto mod = module.get();
+    llvm::LLVMContext llvmContext;
+    auto llvmModule = mlir::translateModuleToLLVMIR(module.get(), llvmContext);
+    if (!llvmModule)
+      return failure();
+
     if (!llvmModule)
       return failure();
     llvmModule->print(outputFile.value()->os(), nullptr);

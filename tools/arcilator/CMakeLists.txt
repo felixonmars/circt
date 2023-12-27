@@ -1,6 +1,9 @@
 set(LLVM_LINK_COMPONENTS Support)
 
-add_circt_tool(arcilator arcilator.cpp)
+add_circt_tool(arcilator arcilator.cpp
+  ObjectCompilation.cpp
+)
+
 target_link_libraries(arcilator
   PRIVATE
   CIRCTArc
