@@ -1393,7 +1393,8 @@ void fixupAllModules(InstanceGraph &instanceGraph) {
   for (auto *node : instanceGraph) {
     auto module = cast<FModuleLike>(*node->getModule());
     for (auto *instRec : node->uses()) {
-      auto inst = instRec->getInstance<InstanceOp>();
+      // auto inst = instRec->getInstance<InstanceOp>();
+      auto inst = ::dyn_cast_or_null<InstanceOp>(*instRec->getInstance());
       // Only handle module instantiations for now.
       if (!inst)
         continue;
