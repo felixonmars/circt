@@ -68,10 +68,10 @@ void ProbeDCEPass::runOnOperation() {
   if (result.failed())
     signalPassFailure();
 
-  if (ig)
-    markAnalysesPreserved<InstanceGraph>();
-  if (!anyChanges)
-    markAllAnalysesPreserved();
+  // if (ig)
+  //   markAnalysesPreserved<InstanceGraph>();
+  // if (!anyChanges)
+  //   markAllAnalysesPreserved();
 }
 
 /// This is the pass constructor.
