@@ -229,10 +229,34 @@ computeLoweringImpl(FModuleLike mod, PortConversion &newPorts, Convention conv,
         return success();
       })
       .template Case<FEnumType>([&](FEnumType fenum) { return failure(); })
-      .template Case<RefType, FIRRTLBaseType, FIRRTLType>([&](auto type) {
-        // Properties and other types wind up here.
+      .template Case<RefType>([&](RefType ref) {
+        newPorts.push_back({{StringAttr::get(ctx, name),
+                             ref,
+                             isFlip ? Direction::Out : Direction::In,
+                             {},
+                             port.loc,
+                             {}},
+                            portID,
+                            newPorts.size(),
+                            fieldID});
+        return success();
+      })
+      .template Case<FIRRTLBaseType>([&](FIRRTLBaseType groundType) {
+        assert(groundType.isGround() && "only ground types are expected here");
         newPorts.push_back(
-            {{StringAttr::get(ctx, name), type,
+            {{StringAttr::get(ctx, name), groundType,
+              isFlip ? Direction::Out : Direction::In,
+              symbolsForFieldIDRange(ctx, syms, fieldID, fieldID), port.loc,
+              annosForFieldIDRange(ctx, annos, fieldID, fieldID)},
+             portID,
+             newPorts.size(),
+             fieldID});
+        return success();
+      })
+      .template Case<FIRRTLType>([&](FIRRTLType otherType) {
+        // Properties and other types wind up hear.
+        newPorts.push_back(
+            {{StringAttr::get(ctx, name), otherType,
               isFlip ? Direction::Out : Direction::In,
               symbolsForFieldIDRange(ctx, syms, fieldID, fieldID), port.loc,
               annosForFieldIDRange(ctx, annos, fieldID, fieldID)},

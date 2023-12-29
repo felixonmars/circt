@@ -1,4 +1,5 @@
 ; RUN: firtool %s -verify-diagnostics
+; RUN: firtool %s -preserve-aggregate=all -scalarize-public-modules=false -verify-diagnostics
 FIRRTL version 3.0.0
 
 circuit Top :
