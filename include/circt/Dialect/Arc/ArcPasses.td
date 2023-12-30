@@ -305,4 +305,8 @@ def StripSV : Pass<"arc-strip-sv", "mlir::ModuleOp"> {
                            "hw::HWDialect", "seq::SeqDialect"];
 }
 
+def ArcSeparateModules : Pass<"arc-separate-modules", "mlir::ModuleOp"> {
+  let summary = "Create separated modules";
+}
+
 #endif // CIRCT_DIALECT_ARC_ARCPASSES_TD

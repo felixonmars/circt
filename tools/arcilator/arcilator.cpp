@@ -317,7 +317,7 @@ static void populatePipeline(PassManager &pm) {
   pm.addPass(createLowerArcToLLVMPass());
   pm.addPass(createCSEPass());
   pm.addPass(arc::createArcCanonicalizerPass());
-  pm.addPass(arc::createSeparateModules());
+  pm.addPass(arc::createArcSeparateModules());
 }
 
 static LogicalResult processBuffer(
