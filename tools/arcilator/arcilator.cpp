@@ -183,7 +183,7 @@ static cl::opt<OutputFormat> outputFormat(
     cl::desc("Specify output format"),
     cl::values(clEnumValN(OutputMLIR, "emit-mlir", "Emit MLIR dialects"),
                clEnumValN(OutputLLVM, "emit-llvm", "Emit LLVM"),
-               clEnumValN(OutputLLVM, "emit-object", "Emit an Object file"),
+               clEnumValN(OutputObject, "emit-object", "Emit an Object file"),
                clEnumValN(OutputDisabled, "disable-output",
                           "Do not output anything")),
     cl::init(OutputLLVM), cl::cat(mainCategory));
@@ -317,7 +317,6 @@ static void populatePipeline(PassManager &pm) {
   pm.addPass(createLowerArcToLLVMPass());
   pm.addPass(createCSEPass());
   pm.addPass(arc::createArcCanonicalizerPass());
-  pm.addPass(arc::createArcSeparateModules());
 }
 
 static LogicalResult processBuffer(
@@ -340,10 +339,10 @@ static LogicalResult processBuffer(
 
   if (printDebugInfo && outputFormat == OutputLLVM)
     pm.nest<LLVM::LLVMFuncOp>().addPass(LLVM::createDIScopeForLLVMFuncOpPass());
-
+  if (outputFormat == OutputObject)
+    pm.addPass(circt::arc::createArcSeparateModules());
   if (failed(pm.run(module.get())))
     return failure();
-
   // Handle MLIR output.
   if (runUntilBefore != UntilEnd || runUntilAfter != UntilEnd ||
       outputFormat == OutputMLIR) {
@@ -370,16 +369,7 @@ static LogicalResult processBuffer(
 
   if (outputFormat == OutputObject) {
     auto outputTimer = ts.nest("Emit an object");
-    auto mod = module.get();
-    llvm::LLVMContext llvmContext;
-    auto llvmModule = mlir::translateModuleToLLVMIR(module.get(), llvmContext);
-    if (!llvmModule)
-      return failure();
-
-    if (!llvmModule)
-      return failure();
-    llvmModule->print(outputFile.value()->os(), nullptr);
-    return success();
+    return compileLLVMModule(module.get());
   }
 
   return success();

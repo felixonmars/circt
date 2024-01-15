@@ -1,7 +1,8 @@
 namespace mlir {
   class ModuleOp;
+  class LogicalResult;
 }
 
 namespace circt {
-  void compileLLVMModule(mlir::ModuleOp module);
+  mlir::LogicalResult compileLLVMModule(mlir::ModuleOp module);
 }
