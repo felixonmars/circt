@@ -1414,14 +1414,6 @@ LogicalResult XorOp::canonicalize(XorOp op, PatternRewriter &rewriter) {
     return success();
   }
 
-  // Skip if the operation should be flattened by another operation.
-  if (shouldBeFlattened(op))
-    return failure();
-
-  // and(x, and(...)) -> and(x, ...) -- flatten
-  if (tryFlatteningOperands(op, rewriter))
-    return success();
-
   // Patterns for xor with a constant on RHS.
   APInt value;
   if (matchPattern(inputs.back(), m_ConstantInt(&value))) {
@@ -1466,9 +1458,14 @@ LogicalResult XorOp::canonicalize(XorOp op, PatternRewriter &rewriter) {
     }
   }
 
-  // xor(x, xor(...)) -> xor(x, ...) -- flatten
+  // Skip if the operation should be flattened by another operation.
+  if (shouldBeFlattened(op))
+    return failure();
+
+  // and(x, and(...)) -> and(x, ...) -- flatten
   if (tryFlatteningOperands(op, rewriter))
     return success();
+
 
   // extracts only of xor(...) -> xor(extract()...)
   if (narrowOperationWidth(op, true, rewriter))
@@ -1558,14 +1555,6 @@ LogicalResult AddOp::canonicalize(AddOp op, PatternRewriter &rewriter) {
   auto size = inputs.size();
   assert(size > 1 && "expected 2 or more operands");
 
-  // Skip if the operation should be flattened by another operation.
-  if (shouldBeFlattened(op))
-    return failure();
-
-  // add(a, add(...)) -> add(a, ...) -- flatten
-  if (tryFlatteningOperands(op, rewriter))
-    return success();
-
   APInt value, value2;
 
   // add(..., 0) -> add(...) -- identity
@@ -1637,6 +1626,14 @@ LogicalResult AddOp::canonicalize(AddOp op, PatternRewriter &rewriter) {
     return success();
   }
 
+  // Skip if the operation should be flattened by another operation.
+  if (shouldBeFlattened(op))
+    return failure();
+
+  // add(a, add(...)) -> add(a, ...) -- flatten
+  if (tryFlatteningOperands(op, rewriter))
+    return success();
+
   // extracts only of add(...) -> add(extract()...)
   if (narrowOperationWidth(op, false, rewriter))
     return success();
@@ -1692,14 +1689,6 @@ LogicalResult MulOp::canonicalize(MulOp op, PatternRewriter &rewriter) {
   auto size = inputs.size();
   assert(size > 1 && "expected 2 or more operands");
 
-  // Skip if the operation should be flattened by another operation.
-  if (shouldBeFlattened(op))
-    return failure();
-
-  // mul(a, mul(...)) -> mul(a, ...) -- flatten
-  if (tryFlatteningOperands(op, rewriter))
-    return success();
-
   APInt value, value2;
 
   // mul(x, c) -> shl(x, log2(c)), where c is a power of two.
@@ -1732,6 +1721,14 @@ LogicalResult MulOp::canonicalize(MulOp op, PatternRewriter &rewriter) {
                                          newOperands);
     return success();
   }
+
+  // Skip if the operation should be flattened by another operation.
+  if (shouldBeFlattened(op))
+    return failure();
+
+  // mul(a, mul(...)) -> mul(a, ...) -- flatten
+  if (tryFlatteningOperands(op, rewriter))
+    return success();
 
   // extracts only of mul(...) -> mul(extract()...)
   if (narrowOperationWidth(op, false, rewriter))
