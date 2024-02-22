@@ -26,8 +26,12 @@ void SMTDialect::registerTypes() {
       >();
 }
 
+bool smt::isAnyNonFuncSMTValueType(Type type) {
+  return isa<BoolType, BitVectorType, ArrayType, IntType, SortType>(type);
+}
+
 bool smt::isAnySMTValueType(Type type) {
-  return isa<BoolType, BitVectorType, ArrayType, IntType>(type);
+  return isAnyNonFuncSMTValueType(type) || isa<SMTFuncType>(type);
 }
 
 //===----------------------------------------------------------------------===//
@@ -52,6 +56,34 @@ LogicalResult ArrayType::verify(function_ref<InFlightDiagnostic()> emitError,
     return emitError() << "domain must be any SMT value type";
   if (!isAnySMTValueType(rangeType))
     return emitError() << "range must be any SMT value type";
+
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
+// SMTFuncType
+//===----------------------------------------------------------------------===//
+
+LogicalResult SMTFuncType::verify(function_ref<InFlightDiagnostic()> emitError,
+                                  ArrayRef<Type> domainTypes, Type rangeType) {
+  if (!llvm::all_of(domainTypes, isAnyNonFuncSMTValueType))
+    return emitError() << "domain types must be any non-function SMT type";
+  if (!isAnySMTValueType(rangeType))
+    return emitError() << "range type must be any non-function SMT type";
+
+  return success();
+}
+
+//===----------------------------------------------------------------------===//
+// SortType
+//===----------------------------------------------------------------------===//
+
+LogicalResult SortType::verify(function_ref<InFlightDiagnostic()> emitError,
+                               StringAttr identifier,
+                               ArrayRef<Type> sortParams) {
+  if (!llvm::all_of(sortParams, isAnyNonFuncSMTValueType))
+    return emitError()
+           << "sort parameter types must be any non-function SMT type";
 
   return success();
 }
