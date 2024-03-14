@@ -212,3 +212,99 @@ class AxiMMIO(esi.ServiceImplementation):
     self.wready = 1
     self.bvalid = write_happened
     self.bresp = 0
+
+
+def AxiHostMemoryService(AddressWidth=64, DataWidth=64, IDWidth=6):
+
+  class AxiHostMemoryService(esi.ServiceImplementation):
+    """Service implementation for a host memory service with an AXI protocol."""
+
+    clk = Clock()
+    rst = Input(Bits(1))
+
+    #########################
+    # AXI4 master interface
+
+    # Address write channel
+    AWVALID = Output(Bits(1))
+    AWREADY = Input(Bits(1))
+    AWADDR = Output(Bits(AddressWidth))
+    AWID = Output(Bits(IDWidth))
+    AWLEN = Output(Bits(8))
+    AWSIZE = Output(Bits(3))
+    AWBURST = Output(Bits(2))
+    AWLOCK = Output(Bits(2))
+    AWCACHE = Output(Bits(4))
+    AWPROT = Output(Bits(3))
+    AWQOS = Output(Bits(4))
+    AWREGION = Output(Bits(4))
+
+    # Data write channel
+    WVALID = Output(Bits(1))
+    WREADY = Input(Bits(1))
+    WDATA = Output(Bits(DataWidth))
+    WSTRB = Output(Bits(DataWidth // 8))
+    WLAST = Output(Bits(1))
+
+    # Write response channel
+    BVALID = Input(Bits(1))
+    BREADY = Output(Bits(1))
+    BRESP = Input(Bits(2))
+    BID = Input(Bits(IDWidth))
+
+    # Address read channel
+    ARVALID = Output(Bits(1))
+    ARREADY = Input(Bits(1))
+    ARADDR = Output(Bits(AddressWidth))
+    ARID = Output(Bits(IDWidth))
+    ARLEN = Output(Bits(8))
+    ARSIZE = Output(Bits(3))
+    ARBURST = Output(Bits(2))
+    ARLOCK = Output(Bits(2))
+    ARCACHE = Output(Bits(4))
+    ARPROT = Output(Bits(3))
+    ARQOS = Output(Bits(4))
+    ARREGION = Output(Bits(4))
+
+    # Read data channel
+    RVALID = Input(Bits(1))
+    RREADY = Output(Bits(1))
+    RDATA = Input(Bits(DataWidth))
+    RLAST = Input(Bits(1))
+    RID = Input(Bits(IDWidth))
+    RRESP = Input(Bits(2))
+
+    @generator
+    def build(ports, bundles: esi._ServiceGeneratorBundles):
+      ports.AWVALID = 0
+      ports.AWADDR = 0
+      ports.AWID = 0
+      ports.AWLEN = 0
+      ports.AWSIZE = 0
+      ports.AWBURST = 0
+      ports.AWLOCK = 0
+      ports.AWCACHE = 0
+      ports.AWPROT = 0
+      ports.AWQOS = 0
+      ports.AWREGION = 0
+      ports.WVALID = 0
+      ports.WDATA = 0
+      ports.WSTRB = 0
+      ports.WLAST = 0
+      ports.BREADY = 0
+      ports.ARVALID = 0
+      ports.ARADDR = 0
+      ports.ARID = 0
+      ports.ARLEN = 0
+      ports.ARSIZE = 0
+      ports.ARBURST = 0
+      ports.ARLOCK = 0
+      ports.ARCACHE = 0
+      ports.ARPROT = 0
+      ports.ARQOS = 0
+      ports.ARREGION = 0
+      ports.RREADY = 0
+
+      assert len(bundles.to_client_reqs) == 0
+
+  return AxiHostMemoryService
