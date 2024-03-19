@@ -181,6 +181,24 @@ def CoverOp : VerifOp<"cover"> {
   let summary = "Cover Verification Statement";
 }
 
+def UNROnlyAssumeIntrinsicOp : FIRRTLOp<"int.unrOnlyAssume", []> {
+  let arguments = (ins
+    ClockType:$clock,
+    UInt1Type:$predicate,
+    UInt1Type:$enable,
+    StrAttr:$message,
+    Variadic<AnyType>:$substitutions,
+    StrAttr:$name
+    // TODO: Need guards?
+  );
+
+  let assemblyFormat = [{
+    $clock `,` $predicate `,` $enable `,` $message (`(` $substitutions^ `)`)? `:`
+    type($clock) `,` type($predicate) `,` type($enable) (`,` qualified(type($substitutions))^)?
+    custom<VerifAttrs>(attr-dict)
+  }];
+}
+
 def WhenOp : FIRRTLOp<"when", [SingleBlock, NoTerminator, NoRegionArguments]> {
   let summary = "When Statement";
   let description = [{
