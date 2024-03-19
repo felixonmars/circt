@@ -659,6 +659,13 @@ def RandomizeRegisterInit :
   let constructor = "circt::firrtl::createRandomizeRegisterInitPass()";
 }
 
+def CreateCompanionAssume : Pass<"firrtl-create-companion-assume", "firrtl::FModuleOp"> {
+  let summary = "Create a companion assume for assertions";
+  let description = [{
+  }];
+  let constructor = "circt::firrtl::createCreateCompanionAssume()";
+}
+
 def LowerXMR : Pass<"firrtl-lower-xmr", "firrtl::CircuitOp"> {
   let summary = "Lower ref ports to XMR";
   let description = [{
